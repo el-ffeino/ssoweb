@@ -19,6 +19,7 @@ Fetches proxies for you in case you need to re-check certain accounts
 
 #### So how does it work?
 As this was a hobby project, initial setup might be a bit complicated (all steps below), but once you're through that it's pretty easy to use.  
+
 Simply put, the application keeps track of unique session tokens and device IDs for each of the accounts imported.  
 Each time you open SSO game client it generates a new unique session token, which is then read and saved inside `data.json` for future use, then when you want to play on that account again, it's automatically injected into the client, game-client patch then sets the device Id parameter to match the one used to initially log into the account, skipping the whole login process.   
 
