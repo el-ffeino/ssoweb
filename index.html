@@ -1,0 +1,352 @@
+<head>
+  <meta charset="UTF-8">
+  <title>ssoweb</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="./node_modules/jquery/dist/jquery.min.js"></script>
+</head>
+<body>
+  <div class="ImportWrap">
+    <div class="ImportWindow">
+      <input id="Import" type="text" placeholder="{...}"/>
+    </div>
+  </div>
+
+  <div class="Titlebar">
+    <button class="Import"><svg height="16px" viewBox="0 0 16 16" width="16px"><path d="m 7 1 v 6 h -6 v 2 h 6 v 6 h 2 v -6 h 6 v -2 h -6 v -6 z m 0 0"/></svg></button>
+    <span id="Title">Accounts</span>
+    <button id="Close"><svg height="16px" viewBox="0 0 16 16" width="16px"><path d="m 5.019531 4 c -0.265625 0 -0.519531 0.105469 -0.707031 0.292969 c -0.390625 0.390625 -0.390625 1.023437 0 1.414062 l 2.292969 2.292969 l -2.292969 2.292969 c -0.390625 0.390625 -0.390625 1.023437 0 1.414062 s 1.023438 0.390625 1.414062 0 l 2.292969 -2.292969 l 2.292969 2.292969 c 0.390625 0.390625 1.023438 0.390625 1.414062 0 c 0.390626 -0.390625 0.390626 -1.023437 0 -1.414062 l -2.292968 -2.292969 l 2.292968 -2.292969 c 0.390626 -0.390625 0.390626 -1.023437 0 -1.414062 c -0.1875 -0.1875 -0.441406 -0.292969 -0.707031 -0.292969 s -0.519531 0.105469 -0.707031 0.292969 l -2.292969 2.292969 l -2.292969 -2.292969 c -0.1875 -0.1875 -0.441406 -0.292969 -0.707031 -0.292969 z m 0 0"/></svg></button>
+  </div>
+  <div class="Content">
+    <div class="NoAccounts">
+      <img src="img/donkey.png"/>
+      <p>No Accounts</p>
+      <span>Click on '+' to import accounts</span>
+    </div>
+    <div class="Accounts">
+      <div class="Table">
+        <div class="TableTitle">
+          <div>Credentials</div>
+          <div>Email</div>
+          <div>Rider</div>
+          <div>Star Coins</div>
+          <div>Server</div>
+        </div>
+        <div class="Data">
+
+        </div>
+      </div>
+      <div class="Actions">
+        <button id="Delete">Delete</button>
+        <div>
+          <button id="Recheck">Recheck</button><button id="Play">Play</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let Accounts = [];
+    let LastSelected = null;
+
+    $('#Close').on('click', function()
+    {
+      window.electronAPI.closeApp();
+    });
+
+    $('#Recheck').on('click', function()
+    {
+      const selected = $('.TableRow.selected')[0];
+      const user = $(selected).find('div:first').text().trim();
+      const index = Accounts.findIndex(account => account.user === user);
+
+      if (index != -1)
+      {
+        window.electronAPI.refreshAccount(Accounts[index]['user']);
+      }
+    });
+
+    $('.Import').on('click', function()
+    {
+      $('.ImportWrap').css('display', 'flex');
+    });
+
+    $('#Import').on('paste', function(e)
+    {
+      if (e.originalEvent?.clipboardData)
+      {
+        let data = e.originalEvent.clipboardData.getData('text/plain');
+        if (data)
+        {
+          $('.ImportWrap').css('display', 'none');
+          importAccounts(data);
+          window.electronAPI.saveData(Accounts);
+        }
+      }
+    });
+
+    $('#Delete').on('click', function()
+    {
+      $('.TableRow.selected').each(function()
+      {
+        const user = $(this).find('div:first').text().trim();
+        const index = Accounts.findIndex(account => account.user === user);
+        if (index != -1)
+        {
+          Accounts.splice(index, 1);
+        }
+        $(this).remove();
+      });
+      let count = $('.TableRow').length;
+      if (count < 1)
+      {
+        $('.NoAccounts').css('display', 'flex');
+        $('.Accounts').css('display', 'none');
+      }
+      window.electronAPI.saveData(Accounts);
+    });
+
+    $('#Play').on('click', function()
+    {
+      let count = $('.TableRow.selected').length;
+      if (count != 1) return;
+
+      const user = $('.TableRow.selected').find('div:first').text().trim();
+      const index = Accounts.findIndex(account => account.user === user);
+
+      if (index != -1)
+      {
+        window.electronAPI.Play(Accounts[index]);
+      }
+    });
+
+    $(document).ready(function() {
+      initializeApp();
+      $(document).on('click', '.TableRow', function(e) 
+      {
+        const Rows = $('.TableRow');
+        const Clicked = $(this);
+        const Index = Rows.index(Clicked);
+
+        if (e.ctrlKey)
+        {
+          if (e.shiftKey && LastSelected != null)
+          {
+            const First = Math.min(LastSelected, Index);
+            const Last = Math.max(LastSelected, Index);
+            
+            Rows.slice(First, Last + 1).each(function()
+            {
+              const Row = $(this);
+              if (Row.index() !== LastSelected)
+              {
+                Row.toggleClass('selected');
+              }
+            });
+          }
+          else
+          {
+            $(this).toggleClass('selected');
+          }
+        }
+        else
+        {
+          $('.TableRow.selected').toggleClass('selected');
+          $(this).toggleClass('selected');
+        }
+
+        LastSelected = Index;
+      });
+      $(document).on('keydown', function(e)
+      {
+        if (e.key === 'Escape'|| e.key === 'Esc')
+        {
+          $('.ImportWrap').css('display', 'none');
+        }
+      });
+      $(document).on('click', '.Toast', function()
+      {
+        $(this).remove();
+      });
+    });
+
+    window.electronAPI.onSessionUpdated((data) => 
+    {
+      const user = data.user;
+      const index = Accounts.findIndex(account => account.user === user);
+
+      if (index != -1)
+      {
+        Accounts[index]['session-token'] = data.sessionToken;
+        window.electronAPI.saveData(Accounts);
+      }
+    });
+
+    window.electronAPI.onInvalidCredentials((data) =>
+    {
+      const user = data.user;
+      const index = Accounts.findIndex(account => account.user === user);
+
+      if (index != -1)
+      {
+        Accounts.splice(index, 1);
+        window.electronAPI.saveData(Accounts);
+
+        let row = $(`.TableRow[user="${user}"]`);
+        $(row).remove();
+      }
+    });
+
+    window.electronAPI.onAccountRefreshed((data) => {
+      const user = data.user;
+      const index = Accounts.findIndex(account => account.user === user);
+
+      if (index != -1)
+      {
+       Accounts[index]['session-token'] = data.sessionToken;
+       Accounts[index]['device-id'] = data.deviceId;
+       Accounts[index]['coins'] = data.coins;
+       Accounts[index]['server'] = data.server;
+       Accounts[index]['verified'] = data.verified;
+       Accounts[index]['banned'] = data.banned;
+       window.electronAPI.saveData(Accounts); 
+       UI.updateAccount(Accounts[index]);
+      }
+
+      UI.createToast('success', 'Account refreshed');
+    });
+
+    window.electronAPI.onMessageReceived((data) => 
+    {
+      UI.createToast(data.status, data.message);
+    });
+
+    /* Functions */
+    async function initializeApp()
+    {
+      const data = await window.electronAPI.getData();
+      $.each(data, function(i, account)
+      {
+        Accounts.push(account);
+        UI.addAccount(account);
+      });
+    }
+
+    function importAccounts(data)
+    {
+      const count = Accounts.length;
+      const regex = /\{\s*"user"[\s\S]*?\}/g;
+      const accounts = data.match(regex);
+      let existing = 0;
+
+      for(let match of accounts)
+      {
+        let accJson = match.replace(/\s+/g, ' ').trim();
+          try 
+          {
+            let account = JSON.parse(accJson);
+            let index = Accounts.findIndex(a => a.user === account.user);
+
+            if (index != -1) {
+              existing++;
+              Accounts[index] = account;
+              UI.updateAccount(account);
+            } else {
+              Accounts.push(account);
+              UI.addAccount(account);
+            }
+          }
+          catch { console.warn(`Skipped over invalid account: ${accJson}`); }
+      }
+
+      let difference = Accounts.length - (count + existing); 
+      if (difference > 0) {
+        UI.createToast('success', `Imported ${Accounts.length - count - existing} accounts`);
+      } else {
+        UI.createToast('success' `Updated ${existing} accounts`);
+      }
+    }
+
+    const UI =
+    {
+      checkmark: '<div class="Checkmark"><svg height="16px" viewBox="0 0 16 16" width="16px"><path d="m 13.398438 2.011719 c -0.394532 0.027343 -0.765626 0.210937 -1.027344 0.507812 l -5.78125 6.609375 l -1.890625 -2.519531 c -0.496094 -0.664063 -1.4375 -0.796875 -2.101563 -0.300781 c -0.316406 0.238281 -0.527344 0.59375 -0.582031 0.988281 c -0.058594 0.394531 0.046875 0.796875 0.285156 1.113281 l 3 4 c 0.273438 0.359375 0.691407 0.582032 1.144531 0.597656 c 0.449219 0.015626 0.886719 -0.171874 1.183594 -0.511718 l 7 -8 c 0.542969 -0.625 0.480469 -1.570313 -0.140625 -2.117188 c -0.300781 -0.261718 -0.691406 -0.394531 -1.089843 -0.367187 z m 0 0"/></svg></div>',
+      cross: '<div class="Cross"><svg height="16px" viewBox="0 0 16 16" width="16px"><path d="m 3.019531 2 c -0.265625 0 -0.519531 0.105469 -0.707031 0.292969 c -0.390625 0.390625 -0.390625 1.023437 0 1.414062 l 4.292969 4.292969 l -4.292969 4.292969 c -0.390625 0.390625 -0.390625 1.023437 0 1.414062 s 1.023438 0.390625 1.414062 0 l 4.292969 -4.292969 l 4.292969 4.292969 c 0.390625 0.390625 1.023438 0.390625 1.414062 0 c 0.390626 -0.390625 0.390626 -1.023437 0 -1.414062 l -4.292968 -4.292969 l 4.292968 -4.292969 c 0.390626 -0.390625 0.390626 -1.023437 0 -1.414062 c -0.1875 -0.1875 -0.441406 -0.292969 -0.707031 -0.292969 s -0.519531 0.105469 -0.707031 0.292969 l -4.292969 4.292969 l -4.292969 -4.292969 c -0.1875 -0.1875 -0.441406 -0.292969 -0.707031 -0.292969 z m 0 0"/></svg></div>',
+      animations: 200,
+      toast:
+      {
+        duration: 5000,
+        success: '<svg height="16px" viewBox="0 0 16 16" width="16px"><g><path d="m 11.164062 5.863281 c 0.640626 0.042969 0.933594 0.824219 0.476563 1.277344 l -3.640625 3.640625 c -0.292969 0.292969 -0.769531 0.292969 -1.0625 0 l -2.175781 -2.109375 c -0.707031 -0.707031 0.355469 -1.769531 1.0625 -1.0625 l 1.644531 1.578125 l 3.109375 -3.109375 c 0.15625 -0.152344 0.367187 -0.230469 0.585937 -0.214844 z m 0 0"/><path d="m 7.996094 0 c -4.402344 0 -7.996094 3.59375 -7.996094 8 s 3.59375 8 7.996094 8 c 4.40625 0 7.996094 -3.59375 7.996094 -8 s -3.589844 -8 -7.996094 -8 z m 0 2 c 3.324218 0 5.996094 2.675781 5.996094 6 s -2.671876 6 -5.996094 6 c -3.320313 0 -5.996094 -2.675781 -5.996094 -6 s 2.675781 -6 5.996094 -6 z m 0 0"/></g></svg>',
+        error: '<svg height="16px" viewBox="0 0 16 16" width="16px"><g><path d="m 6 5.03125 c 0.265625 0 0.519531 0.105469 0.707031 0.292969 l 1.292969 1.292969 l 1.292969 -1.292969 c 0.1875 -0.1875 0.441406 -0.292969 0.707031 -0.292969 s 0.519531 0.105469 0.707031 0.292969 c 0.390625 0.390625 0.390625 1.023437 0 1.414062 l -1.292969 1.292969 l 1.292969 1.292969 c 0.390625 0.390625 0.390625 1.023437 0 1.414062 s -1.023437 0.390625 -1.414062 0 l -1.292969 -1.292969 l -1.292969 1.292969 c -0.390625 0.390625 -1.023437 0.390625 -1.414062 0 s -0.390625 -1.023437 0 -1.414062 l 1.292969 -1.292969 l -1.292969 -1.292969 c -0.390625 -0.390625 -0.390625 -1.023437 0 -1.414062 c 0.1875 -0.1875 0.441406 -0.292969 0.707031 -0.292969 z m 0 0"/><path d="m 8 0 c -4.402344 0 -8 3.597656 -8 8 s 3.597656 8 8 8 s 8 -3.597656 8 -8 s -3.597656 -8 -8 -8 z m 0 1.980469 c 3.339844 0 6.019531 2.679687 6.019531 6.019531 s -2.679687 6.015625 -6.019531 6.015625 s -6.019531 -2.675781 -6.019531 -6.015625 s 2.679687 -6.019531 6.019531 -6.019531 z m 0 0"/></g></svg>',
+        warn: '<svg height="16px" viewBox="0 0 16 16" width="16px"><g><path d="m 8 0 c -4.410156 0 -8 3.589844 -8 8 s 3.589844 8 8 8 s 8 -3.589844 8 -8 s -3.589844 -8 -8 -8 z m 0 2 c 3.332031 0 6 2.667969 6 6 s -2.667969 6 -6 6 s -6 -2.667969 -6 -6 s 2.667969 -6 6 -6 z m 0 7.875 c -0.621094 0 -1.125 0.503906 -1.125 1.125 s 0.503906 1.125 1.125 1.125 s 1.125 -0.503906 1.125 -1.125 s -0.503906 -1.125 -1.125 -1.125 z m 0 0"/><path d="m 7 4 h 2 v 5 h -2 z m 0 0"/></g></svg>'
+      },
+      colors:
+      {
+        success: 'var(--color-blue)',
+        error: 'var(--color-red)',
+        warn: 'var(--color-orange)'
+      },
+
+      addAccount(account)
+      {
+        let row = `
+        <div class="TableRow" user="${account.user}">
+          <div>${account.user}</div>
+          ${account.verified? this.checkmark : this.cross}
+          ${account.premium? this.checkmark : this.cross}
+          <div>${account.coins}</div>
+          <div>${account.server}</div>
+        </div>`;
+        $('.Data').append(row);
+
+        let count = $('.TableRow').length;
+        if (count > 0)
+        {
+          $('.NoAccounts').css('display', 'none');
+          $('.Accounts').css('display', 'flex');
+        }
+      },
+
+      updateAccount(account)
+      {
+        let row = $(`.TableRow[user="${account.user}"]`);
+
+        if (row.length === 0) {
+          console.log('Unable to find user: ' + account.user);
+          return;
+        }
+
+        row.find('div:nth-child(2)').replaceWith(account.verified ? this.checkmark : this.cross);
+        row.find('div:nth-child(3)').replaceWith(account.premium ? this.checkmark : this.cross);
+        row.find('div:nth-child(4)').text(account.coins);
+        row.find('div:nth-child(5)').text(account.server);
+      },
+
+      createToast(status = 'success', message)
+      {
+        if ($('.Toast').length > 0)
+        {
+          setTimeout(() => { this.createToast(status, message); }, this.animations);
+          return;
+        }
+
+        $('body').prepend(`<div class="Toast">${this.toast[status]}${message}<div class="ToastTimer"></div></div>`);
+
+        let Toast = $('.Toast')[0];
+        let Timer = $('.ToastTimer')[0];
+
+        $(Toast).css('background', `${this.colors[status]}`);
+        void Toast.offsetHeight;
+
+        $(Timer).css('width', '100%');
+        $(Timer).css('transition', 'none');
+        $(Timer).css('transition', 'width 5000ms linear');
+        $(Timer).css('width', '0%');
+
+        $(Toast).addClass('show');
+        setTimeout(() => {
+          $(Toast).removeClass('show');
+          setTimeout(() => { $(Toast).remove(); }, this.animations);
+        }, 5000);
+      }
+    };
+  </script>
+</body>

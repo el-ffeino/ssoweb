@@ -1,0 +1,351 @@
+@font-face 
+{
+    font-family: 'Adwaita Sans';
+    src: url('fonts/AdwaitaSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+  
+@font-face 
+{
+    font-family: 'Adwaita Sans';
+    src: url('fonts/AdwaitaSans-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+*,
+*::before,
+*::after {
+  font-family: 'Adwaita Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+:root
+{
+    --color-surface: #222226;
+    --color-surface2: #343437;
+    --color-surface3: #38383c;
+    --color-surface4: #48484b;
+
+    --color-green: #26a269;
+    --color-orange: #ffa348;
+    --color-red: #c01c28;
+    --color-blue: #3584e4;
+    --color-blue2: #62a0ea;
+
+    --color-svg: #e9e9e9;
+    --color-hover: #434347;
+    --color-transp-hover: rgba(52, 52, 55, 0.6);
+    --color-text2: rgba(233, 233, 233, 0.9);
+
+    --animation: 200ms;
+    --padding-s: 5px;
+    --padding: 12px;
+    --border: 8px;
+}
+body
+{
+    background: var(--color-surface);
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100vh;
+}
+
+button
+{
+    all: unset;
+    cursor: pointer;
+    border-radius: var(--border);
+}
+path
+{
+    fill: var(--color-svg);
+}
+
+.Titlebar
+{
+    -webkit-app-region: drag;
+    user-select: none;
+    padding: var(--padding-s);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--padding-s) 8px;
+}
+.Titlebar button,
+.Titlebar button * {
+    -webkit-app-region: no-drag;
+}
+.Import
+{
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    place-content: center;
+}
+.Import:hover
+{
+    background: var(--color-transp-hover);
+    transition: var(--animation);
+}
+#Close
+{
+    background: var(--color-surface3);
+    padding: 4px;
+    border-radius: 999px;
+}
+#Close:hover
+{
+    background: var(--color-hover);
+    transition: var(--animation);
+}
+#Title
+{
+    font-weight: bold;
+    letter-spacing: 0.2px;
+}
+.NoAccounts
+{
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(100vh - 40px);
+    place-content: center;
+    align-items: center;
+}
+.NoAccounts img
+{
+    height: 140px;
+}
+.NoAccounts p
+{
+    font-weight: 700;
+    font-size: 28px;
+}
+.NoAccounts span
+{
+    color: var(--color-text2);
+}
+
+.Content
+{
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.Accounts
+{
+    width: 100%;
+    height: calc(100% - 52px);
+    display: none;
+    flex-direction: column;
+}
+
+.Table
+{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.TableTitle
+{
+    background: var(--color-surface2);
+    border-radius: var(--border) var(--border) 0 0;
+    user-select: none;
+    border-bottom: 1px solid var(--color-surface4);
+    font-weight: bold;
+}
+
+.TableTitle,
+.TableRow
+{
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.TableTitle div,
+.TableRow div
+{
+    display: flex;
+    align-items: center;
+    place-content: center;
+    text-align: center;
+    padding: var(--padding);
+}
+
+.TableTitle div:nth-child(1),
+.TableRow div:nth-child(1),
+.TableRow div:nth-child(5)
+{
+    display: inline-block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 30%;
+}
+
+.TableTitle div:nth-child(2),
+.TableTitle div:nth-child(3),
+.TableRow div:nth-child(2),
+.TableRow div:nth-child(3)
+{
+    width: 40px;
+}
+
+.TableTitle div:nth-child(4),
+.TableRow div:nth-child(4)
+{
+    width: 80px;
+}
+
+.TableTitle div:nth-child(5),
+.TableRow div:nth-child(5)
+{
+    flex: 1;
+}
+
+.TableRow div:nth-child(1)
+{
+    text-align: left;
+}
+.TableRow div:nth-child(5)
+{
+    text-align: right;
+}
+
+.Data
+{
+    overflow: auto;
+    border-radius: 0 0 var(--border) var(--border);
+}
+.Data::-webkit-scrollbar
+{
+    display: none;
+}
+
+.TableRow
+{
+    background: var(--color-surface3);
+    user-select: none;
+    cursor: pointer;
+}
+.TableRow:nth-of-type(even)
+{
+    background: var(--color-surface2);
+}
+
+.Actions
+{
+    display: flex;
+    flex-direction: row;
+    margin-top: 16px;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.Actions button
+{
+    text-align: center;
+    padding: 10px 40px;
+    background: var(--color-surface2);
+
+}
+.Actions button:hover
+{
+    background: var(--color-surface3);
+    transition: var(--animation);
+}
+
+#Play
+{
+    background: var(--color-blue);
+    margin-left: var(--padding-s);
+    font-weight: bold;
+}
+#Play:hover
+{
+    background: var(--color-blue2);
+}
+
+.TableRow.selected
+{
+    background: var(--color-blue);
+}
+
+.ImportWrap
+{
+    background: rgba(11, 11, 13, 0.7);
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: fixed;
+    display: none; /* flex */
+    align-items: center;
+    place-content: center;
+}
+.ImportWindow
+{
+    background: var(--color-surface);
+    border: 1px solid var(--color-surface4);
+    border-radius: var(--border);
+    padding: var(--padding);
+}
+#Import
+{
+    all: unset;
+    background: var(--color-surface2);
+    padding: var(--padding);
+    border-radius: var(--border);
+}
+
+.Toast
+{
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: -80px;
+    background: var(--color-blue);
+    padding: var(--padding) var(--padding) var(--padding) calc(var(--padding) + 2px);
+    border-radius: var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    cursor: pointer;
+    max-width: 60vw;
+    font-weight: bold;
+    transition: top var(--animation) ease;
+    overflow: hidden;
+}
+.Toast.show
+{
+    top: 52px;
+}
+.Toast svg
+{
+    height: 18px;
+    width: 18px;
+    flex-shrink: 0;
+}
+.ToastTimer
+{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    background: rgba(233, 233, 233, 0.5);
+    transition: none;
+}

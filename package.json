@@ -1,0 +1,70 @@
+{
+  "name": "ssoweb",
+  "version": "1.0.0",
+  "description": "SSO Web Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "dist:all": "electron-builder --win --linux",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "build": {
+    "appId": "com.deeznuts.ssoweb",
+    "productName": "SSO Web",
+    "copyright": "Copyright © 2026 ${author}",
+    "directories": {
+      "output": "dist"
+    },
+    "asar": true,
+    "files": [
+      "**/*",
+      "!node_modules/*/{test,tests,__tests__}",
+      "!**/*.map",
+      "!**/.github",
+      "!**/.gitignore",
+      "!README.md"
+    ],
+    "extraFiles": [
+    "ssorecheck"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^41.1.0",
+    "electron-builder": "^26.8.1",
+    "electron-reloader": "^1.2.3"
+  },
+  "dependencies": {
+    "@electron/asar": "^4.2.0",
+    "jquery": "^4.0.0",
+    "undici": "^8.0.2"
+  }
+}
